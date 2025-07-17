@@ -1,7 +1,7 @@
 fx_version 'cerulean'
 game 'gta5'
 lua54 'yes'
-version '1.0.0'
+version '1.0.1'
 author 'TGIANN | https://tgiann.com'
 description 'TGIANN Ped Scale - Height and Weight'
 

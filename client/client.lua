@@ -21,7 +21,7 @@ end
 
 ---@param vec vector3
 local function norm(vec)
-    local mag = math.sqrt(vec.x * vec.x + vec.y * vec.y + vec.z * vec.z)
+    local mag = math.sqrt(vec.x ^ 2 + vec.y ^ 2 + vec.z ^ 2)
     if mag == 0 then return vec end
     return vector3(vec.x / mag, vec.y / mag, vec.z / mag)
 end
@@ -30,29 +30,27 @@ end
 ---@param heightScale number
 ---@param widthScale number
 local function changeEntitySize(ped, heightScale, widthScale)
+    if not DoesEntityExist(ped) then return end
+    if IsPedInAnyVehicle(ped, false) then return end -- Set Entity Size does not work properly in vehicles
+
     local forward, right, upVector, position = GetEntityMatrix(ped)
 
+    local adjustedWidthScale                 = config.weight.active and heightScale * widthScale or heightScale
 
-    local adjustedWidthScale = (widthScale == 1.0) and heightScale or (heightScale * widthScale + 1)
+    local forwardNorm                        = norm(forward) * adjustedWidthScale
+    local rightNorm                          = norm(right) * adjustedWidthScale
+    local upNorm                             = norm(upVector) * heightScale
 
-    local forwardNorm        = norm(forward) * adjustedWidthScale
-    local rightNorm          = norm(right) * adjustedWidthScale
-    local upNorm             = norm(upVector) * heightScale
+    local adjustedZ                          = GetEntitySpeed(ped) > 0 and (0.99 - heightScale) or 0.0
 
-    local zOffset            = (1.0 - heightScale) * 0.5
-    local adjustedZ          = position.z - zOffset
-
-    if GetEntitySpeed(ped) > 0 then
-        adjustedZ = adjustedZ - zOffset
-    else
-        adjustedZ = adjustedZ + zOffset
-    end
+    -- Disable look at the arround to prevent flickering
+    TaskLookAtEntity(ped, ped, 1, 2048, 3)
 
     SetEntityMatrix(ped,
         forwardNorm.x, forwardNorm.y, forwardNorm.z,
         rightNorm.x, rightNorm.y, rightNorm.z,
         upNorm.x, upNorm.y, upNorm.z,
-        position.x, position.y, adjustedZ
+        position.x, position.y, (position.z - adjustedZ)
     )
 end
 
