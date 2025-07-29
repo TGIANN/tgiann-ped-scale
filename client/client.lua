@@ -35,13 +35,18 @@ local function changeEntitySize(ped, heightScale, widthScale)
 
     local forward, right, upVector, position = GetEntityMatrix(ped)
 
-    local adjustedWidthScale                 = config.weight.active and heightScale * widthScale or heightScale
+    local adjustedWidthScale = config.weight.active and heightScale * widthScale or heightScale
 
-    local forwardNorm                        = norm(forward) * adjustedWidthScale
-    local rightNorm                          = norm(right) * adjustedWidthScale
-    local upNorm                             = norm(upVector) * heightScale
 
-    local adjustedZ                          = GetEntitySpeed(ped) > 0 and (0.99 - heightScale) or 0.0
+    local forwardNorm = norm(forward) * adjustedWidthScale
+    local rightNorm   = norm(right) * adjustedWidthScale
+    local upNorm      = norm(upVector) * heightScale
+
+
+    local entitySpeed             = GetEntitySpeed(ped)
+    local entityHeightAboveGround = GetEntityHeightAboveGround(ped)
+
+    local adjustedZ               = (entitySpeed <= 0 and entityHeightAboveGround < 2) and (entityHeightAboveGround - heightScale) or (GetEntityUprightValue(ped) - heightScale)
 
     -- Disable look at the arround to prevent flickering
     TaskLookAtEntity(ped, ped, 1, 2048, 3)
